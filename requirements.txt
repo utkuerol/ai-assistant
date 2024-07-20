@@ -1,0 +1,9 @@
+langchain_core==0.2.22
+langchain_openai==0.1.17
+PyAudio==0.2.14
+PyQt6==6.7.1
+PyQt6_sip==13.8.0
+python-dotenv==1.0.1
+RealtimeSTT==0.2.1
+RealTimeTTS==0.4.4
+simpleaudio==1.0.4

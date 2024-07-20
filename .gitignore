@@ -1,3 +1,7 @@
+models
+realtimesst.log
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -122,7 +126,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+.env.secret
 .venv
 env/
 venv/
