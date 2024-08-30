@@ -1,38 +1,66 @@
-from RealtimeSTT import AudioToTextRecorder
-from pathlib import Path
-from modules.utils import play_audio
-import logging
+import numpy as np
+import speech_recognition as sr
+from faster_whisper import WhisperModel
+from queue import Queue
+import asyncio
+from datetime import datetime
 
 class SpeechToText:
-    def __init__(self, model="medium", language="en", device="cuda", input_device_index=0, on_speech_detected=None):
-        self._on_speech_detected = on_speech_detected
-        self._set_sounds()
-        self.recorder = self._init_recorder(model, language, device, input_device_index)
-    
-    def listen(self):
-        play_audio(self.record_start_sound)
-        user_input = self.recorder.text()
-        play_audio(file_path=self.record_stop_sound)
-        return user_input.strip()
+    def __init__(self, model_size="medium", language="en", device="cuda", input_device_index=0):
+        print("Initializing speech-to-text")
+        self.model_size = model_size
+        self.language = language
+        self.device = device
+        self.input_device_index = input_device_index
         
-    def _init_recorder(self, model="medium", language="en", device="cuda", input_device_index=0):
-        print("Initializing speech-to-text...")
-        recorder = AudioToTextRecorder(
-            spinner=False, 
-            model=model, 
-            language=language, 
-            input_device_index=input_device_index, 
-            device=device,
-            enable_realtime_transcription=True,
-            on_realtime_transcription_update=self._on_speech_detected,
-            level=logging.ERROR
-        )
-        print("Speech-to-text is ready!")
-        return recorder
-    
-    def _set_sounds(self):
-        script_path = Path(__file__).resolve()
-        base_path = script_path.parents[1]
-        self.record_start_sound = base_path / "resources/active.wav"
-        self.record_stop_sound = base_path / "resources/inactive.wav"
-    
+        self.model = WhisperModel(self.model_size, device=self.device, compute_type="int8_float16")
+        
+        self.recognizer = sr.Recognizer()
+        self.recognizer.energy_threshold = 1500
+        self.recognizer.dynamic_energy_threshold = False
+        self.microphone = sr.Microphone(device_index=input_device_index, sample_rate=16000)
+
+        self.data_queue = Queue()
+        self.mic_lock = False
+        print("speech-to-text is ready")
+                
+    def _record_callback(self, _, audio: sr.AudioData) -> None:
+        data = audio.get_raw_data()
+        self.data_queue.put(data)
+
+    async def listen(self):
+        if self.mic_lock:
+            return
+        
+        try:
+            with self.microphone as source:
+                self.mic_lock = True
+                self.recognizer.adjust_for_ambient_noise(source)
+
+            stop_listening = self.recognizer.listen_in_background(
+                self.microphone, self._record_callback, phrase_time_limit=2
+            )
+
+            speak_start = None
+            while True:
+                if not self.data_queue.empty():
+                    if speak_start is None:
+                        yield "___start___"
+                    speak_start = datetime.now()
+                    audio_data = b''.join(list(self.data_queue.queue))
+                    self.data_queue.queue.clear()
+
+                    # convert to the format faster-whisper expects
+                    audio_np = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+
+                    segments, _ = self.model.transcribe(audio_np, language=self.language, beam_size=5)
+                    for segment in segments:
+                        if segment.text.strip() != "":
+                            yield segment.text
+                else:
+                    if speak_start is not None and (datetime.now() - speak_start).total_seconds() >= 3:
+                        break
+                    await asyncio.sleep(0.1)
+        finally: 
+            stop_listening(wait_for_stop=False)
+            self.mic_lock = False

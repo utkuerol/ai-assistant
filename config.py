@@ -8,9 +8,10 @@ config = {
     **os.environ,  # override loaded values with environment variables
 }
 
-LLM_API_ENDPOINT = config.get("LLM_API_ENDPOINT", None)
-LLM_API_KEY = config.get("LLM_API_KEY", "no-key")
-LLM_MODEL = config.get("LLM_MODEL", None)
+VOICE_ENABLED: bool = config.get("VOICE_ENABLED", True)
+LLM_API_ENDPOINT: str = config.get("LLM_API_ENDPOINT", None)
+LLM_API_KEY: str = config.get("LLM_API_KEY", "no-key")
+LLM_MODEL: str = config.get("LLM_MODEL", None)
 
 if None in [LLM_API_ENDPOINT, LLM_MODEL]:
     print("missing env variables, exiting...")

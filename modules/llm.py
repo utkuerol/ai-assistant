@@ -37,9 +37,8 @@ class LLM:
     def get_config(self, session_id="dev"):
         return {"configurable": {"session_id": session_id}}
                 
-    def get_response(self, input, config):
-        for chunk in self.with_message_history.stream({"input": input}, config=config):
-            self._on_response_generated(chunk.content)
+    async def get_response(self, input, config):
+        async for chunk in self.with_message_history.astream({"input": input}, config=config):
             yield chunk.content
 
     def _get_session_history(self, session_id: str) -> BaseChatMessageHistory:

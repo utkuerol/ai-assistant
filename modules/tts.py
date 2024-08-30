@@ -5,11 +5,11 @@ class TextToSpeech:
     def __init__(self, speed=1.2, language="en", voice="Abrahan Mack"):
         self.text_to_speech_stream = self._init_stream(speed, language, voice)
     
-    def speak(self, response_stream):
-        self.text_to_speech_stream.feed(response_stream)
-        self.text_to_speech_stream.play()
+    def speak(self, text):
+        self.text_to_speech_stream.feed(text)
+        self.text_to_speech_stream.play_async()
     
-    def _init_stream(self, speed=1.2, language="en", voice="Abrahan Mack"):
+    def _init_stream(self, speed=1.0, language="en", voice="Abrahan Mack"):
         print("Initializing text-to-speech...")
         text_to_speech_engine = CoquiEngine(
             speed=speed,
@@ -23,3 +23,4 @@ class TextToSpeech:
         )
         print("text-to-speech is ready!")
         return stream
+    
