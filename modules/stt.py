@@ -4,6 +4,9 @@ from faster_whisper import WhisperModel
 from queue import Queue
 import asyncio
 from datetime import datetime
+import os
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 class SpeechToText:
     def __init__(self, model_size="medium", language="en", device="cuda", input_device_index=0):
