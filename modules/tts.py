@@ -7,7 +7,7 @@ class TextToSpeech:
     
     def speak(self, text):
         self.text_to_speech_stream.feed(text)
-        self.text_to_speech_stream.play_async()
+        self.text_to_speech_stream.play()
     
     def _init_stream(self, speed=1.0, language="en", voice="Abrahan Mack"):
         print("Initializing text-to-speech...")

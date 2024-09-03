@@ -7,8 +7,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 class LLM:
-    def __init__(self, base_url, api_key, model, on_response_generated, verbose=False):
-        self._on_response_generated = on_response_generated
+    def __init__(self, base_url, api_key, model, verbose=False):
         self.llm = ChatOpenAI(
             openai_api_key=api_key,
             openai_api_base=base_url,

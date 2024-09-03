@@ -1,6 +1,5 @@
 from fastapi import FastAPI, WebSocket
 import uvicorn
-from typing import List, Dict
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
