@@ -9,14 +9,14 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 class SpeechToText:
-    def __init__(self, model_size="medium", language="en", device="cuda", input_device_index=0):
+    def __init__(self, model_size="large", language="en", device="cuda", input_device_index=0):
         print("Initializing speech-to-text")
         self.model_size = model_size
         self.language = language
         self.device = device
         self.input_device_index = input_device_index
         
-        self.model = WhisperModel(self.model_size, device=self.device, compute_type="int8_float16")
+        self.model = WhisperModel(self.model_size, device=self.device, compute_type="float16")
         
         self.data_queue = Queue()
         self.mic_lock = asyncio.Lock()
@@ -55,7 +55,7 @@ class SpeechToText:
                         # Convert to the format faster-whisper expects
                         audio_np = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
 
-                        segments, _ = self.model.transcribe(audio_np, language=self.language, beam_size=5)
+                        segments, _ = self.model.transcribe(audio_np, language=self.language, beam_size=10)
                         for segment in segments:
                             if segment.text.strip() != "":
                                 yield segment.text

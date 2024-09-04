@@ -16,5 +16,3 @@ LLM_MODEL: str = config.get("LLM_MODEL", None)
 if None in [LLM_API_ENDPOINT, LLM_MODEL]:
     print("missing env variables, exiting...")
     sys.exit(1)
-    
-print(f"using LLM server: {LLM_API_ENDPOINT}")
